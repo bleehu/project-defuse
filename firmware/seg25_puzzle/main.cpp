@@ -172,6 +172,14 @@ int main()
             write_to_display(6, 0b00000000'00000000'00000000);  // nothing
             sleep_ms(1);
         }
+        else if (switches == 0xFFFF)
+        {
+            for (uint8_t digit = 0; digit < 7; ++digit)
+            {
+                write_to_display(digit, 0xFFFFFF);
+                sleep_ms(1);
+            }
+        }
         else
         {
             // Generate some pseudorandom data seeded from the switch state
