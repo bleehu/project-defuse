@@ -6,7 +6,7 @@ project(seg25_puzzle C CXX ASM)
 
 pico_sdk_init()
 add_executable(${PROJECT_NAME}
-    test.c
+    main.cpp
 )
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 1)
