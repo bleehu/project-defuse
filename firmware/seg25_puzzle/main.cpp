@@ -146,6 +146,134 @@ uint16_t xorshift()
     return xorshift_state;
 }
 
+typedef union
+{
+    struct 
+    {
+        uint32_t array[6];
+    };
+    struct 
+    {
+        uint32_t digit0;
+        uint32_t digit1;
+        uint32_t digit2;
+        uint32_t digit3;
+        uint32_t digit4;
+        uint32_t digit5;
+    };
+} Display;
+
+void displayLoop(const Display& display)
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        write_to_display(i, display.array[i]);
+        sleep_ms(1);
+    }
+    write_to_display(6, 0);
+    sleep_ms(1);
+}
+
+uint32_t charToSegments(char16_t c)
+{
+    switch (c)
+    {
+    case  'A': return 0b11110011'00010001'00000000;
+    case  'B': return 0b11111100'01010100'00000000;
+    case  'C': return 0b11001111'00000000'00000000;
+    case  'D': return 0b11111100'01000100'00000000;
+    case  'E': return 0b11001111'00000001'00000000;
+    case  'F': return 0b11000011'00000001'00000000;
+    case  'G': return 0b11011111'00010000'00000000;
+    case  'H': return 0b00110011'00010001'00000000;
+    case  'I': return 0b11001100'01000100'00000000;
+    case  'J': return 0b00111110'00000000'00000000;
+    case  'K': return 0b00000011'00101001'00000000;
+    case  'L': return 0b00001111'00000000'00000000;
+    case  'M': return 0b00110011'10100000'00000000;
+    case  'N': return 0b00110011'10001000'00000000;
+    case  'O': return 0b11111111'00000000'00000000;
+    case  'P': return 0b11100011'00010001'00000000;
+    case  'Q': return 0b11111111'00001000'00000000;
+    case  'R': return 0b11100011'00011001'00000000;
+    case  'S': return 0b11011100'10010000'00000000;
+    case  'T': return 0b11000000'01000100'00000000;
+    case  'U': return 0b00111111'00000000'00000000;
+    case  'V': return 0b00000011'00100010'00000000;
+    case  'W': return 0b00110011'00001010'00000000;
+    case  'X': return 0b00000000'10101010'00000000;
+    case  'Y': return 0b00000000'10100100'00000000;
+    case  'Z': return 0b11001100'00100010'00000000;
+
+    case  '0': return 0b11111111'00100010'00000000;
+    case  '1': return 0b00110000'00100000'00000000;
+    case  '2': return 0b11101110'00010001'00000000;
+    case  '3': return 0b11111100'00010000'00000000;
+    case  '4': return 0b00110001'00010001'00000000;
+    case  '5': return 0b11001101'00001001'00000000;
+    case  '6': return 0b11011111'00010001'00000000;
+    case  '7': return 0b11110000'00000000'00000000;
+    case  '8': return 0b11111111'00010001'00000000;
+    case  '9': return 0b11111101'00010001'00000000;
+
+    case  '!': return 0b00000000'01000100'00000100;
+    case  '@': return 0b11101111'01010000'00000000;
+    case  '#': return 0b00111100'01010101'00000000;
+    case  '$': return 0b11011101'01010101'00000000;
+    case  '%': return 0b10011001'01110111'00000000;
+    case  '*': return 0b00000000'11111111'00000000;
+    case  '(': return 0b00000000'00101000'00000000;
+    case  ')': return 0b00000000'10000010'00000000;
+    case  '-': return 0b00000000'00010001'00000000;
+    case  '=': return 0b00001100'00010001'00000000;
+    case  '_': return 0b00001100'00000000'00000000;
+    case  '+': return 0b00000000'01010101'00000000;
+    case  '<': return 0b00000000'00100100'00000000;
+    case  '>': return 0b00000000'10000010'00000000;
+    case  '[': return 0b01001000'01000100'00000000;
+    case  ']': return 0b10000100'01000100'00000000;
+
+    case  '/': return 0b00000000'00100010'00000000;
+    case  '|': return 0b00000000'01000100'00000000;
+    case '\\': return 0b00000000'10001000'00000000;
+    case  '?': return 0b11100000'00010100'00000100;
+
+    case u'β': return 0b10000111'01000101'00000010;
+    case u'Γ': return 0b11000011'00000000'00000000;
+    case u'Σ': return 0b11001100'10000010'00000000;
+    case u'δ': return 0b11011110'10010001'00000000;
+    case u'ζ': return 0b11000110'00100001'00000100;
+    case u'λ': return 0b00000000'10001010'00000000;
+    case u'μ': return 0b00011110'00000000'00000010;
+    case u'Ξ': return 0b11001100'00010001'00000000;
+    case u'Π': return 0b11110011'00000000'00000000;
+    case u'π': return 0b00000000'00011011'00000000;
+    case u'σ': return 0b00000110'00010101'00000000;
+    case u'Ψ': return 0b00100001'01010101'00000000;
+
+    case u'א': return 0b00100010'10011001'00000000;
+    default:   return 0b11111111'11111111'11111111;
+    }
+}
+
+Display stringToDisplay(const char16_t* str)
+{
+    // Zero-init, so we can just stop when we reach the end of the string
+    Display result {};
+    for (int i = 0; i < 6; ++i)
+    {
+        if (str[i] == 0)
+        {
+            break;
+        }
+        else
+        {
+            result.array[i] = charToSegments(str[i]);
+        }
+    }
+    return result;
+}
+
 int main() 
 {
     setup_display_gpio();
@@ -155,24 +283,85 @@ int main()
     {
         auto switches = read_switch();
 
-        if (switches == 0)
+        switch (switches)
         {
-            write_to_display(0, 0b00110011'00010001'00000000);  // H
-            sleep_ms(1);
-            write_to_display(1, 0b11001111'00000001'00000000);  // E
-            sleep_ms(1);
-            write_to_display(2, 0b00001111'00000000'00000000);  // L
-            sleep_ms(1);
-            write_to_display(3, 0b00001111'00000000'00000000);  // L
-            sleep_ms(1);
-            write_to_display(4, 0b11111111'00000000'00000000);  // O
-            sleep_ms(1);
-            write_to_display(5, 0b00000000'01000100'00000100);  // !
-            sleep_ms(1);
-            write_to_display(6, 0b00000000'00000000'00000000);  // nothing
-            sleep_ms(1);
+        case 0:
+        {
+            displayLoop(stringToDisplay(u"HELLO!"));
+            break;
         }
-        else if (switches == 0xFFFF)
+        case 1:
+        {
+            displayLoop(stringToDisplay(u"ABCDEF"));
+            break;
+        }
+        case 2:
+        {
+            displayLoop(stringToDisplay(u"GHIJKL"));
+            break;
+        }
+        case 3:
+        {
+            displayLoop(stringToDisplay(u"MNOPQR"));
+            break;
+        }
+        case 4:
+        {
+            displayLoop(stringToDisplay(u"STUVWX"));
+            break;
+        }
+        case 5:
+        {
+            displayLoop(stringToDisplay(u"YZ0123"));
+            break;
+        }
+        case 6:
+        {
+            displayLoop(stringToDisplay(u"456789"));
+            break;
+        }
+        case 7:
+        {
+            displayLoop(stringToDisplay(u"!@#$%^"));
+            break;
+        }
+        case 8:
+        {
+            displayLoop(stringToDisplay(u"&*()_+"));
+            break;
+        }
+        case 9:
+        {
+            displayLoop(stringToDisplay(u"`~-="));
+            break;
+        }
+        case 10:
+        {
+            displayLoop(stringToDisplay(u"<>[]{}"));
+            break;
+        }
+        case 11:
+        {
+            displayLoop(stringToDisplay(u"/|\\?"));
+            break;
+        }
+        case 12:
+        {
+            displayLoop(stringToDisplay(u"βΓΣδζλ"));
+            break;
+        }
+        case 13:
+        {
+            displayLoop(stringToDisplay(u"μΞΠπσΨ"));
+            break;
+        }
+        case 14:
+        {
+            displayLoop(stringToDisplay(u"א"));
+            break;
+        }
+
+        case 0xFFFF:
         {
             for (uint8_t digit = 0; digit < 7; ++digit)
             {
@@ -180,7 +369,7 @@ int main()
                 sleep_ms(1);
             }
         }
-        else
+        default:
         {
             // Generate some pseudorandom data seeded from the switch state
 
@@ -192,6 +381,9 @@ int main()
                 write_to_display(digit, payload);
                 sleep_ms(1);
             }
+
+            break;
+        }
         }
 
     }
