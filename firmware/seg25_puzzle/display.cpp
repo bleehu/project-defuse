@@ -263,3 +263,12 @@ void update_display(const char* str)
 {
     update_display(string_to_display(str));
 }
+
+void add_marks_to_digit(Display& display, int digit, uint16_t marks)
+{
+    if (digit < 0 || digit > 5) return;
+
+    display.digits[digit] |= marks & 0xFF;
+
+    display.digits[6] |= ((marks >> 8) & 3) << (22 - 2 * digit);
+}

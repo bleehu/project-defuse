@@ -92,6 +92,20 @@ void update_display_from_switches(uint16_t switches)
         update_display(u"א");
         break;
     }
+    case 0x0100:
+    {
+        // A demo/test of the various additional marks
+        Display d = string_to_display("ACUEOI");
+        add_marks_to_digit(d, 0, ACUTE);
+        add_marks_to_digit(d, 1, BOTTOM_RIGHT);
+        add_marks_to_digit(d, 2, DOT_TOP_LEFT | DOT_TOP_RIGHT);
+        add_marks_to_digit(d, 3, ACUTE | GRAVE | DECIMAL_POINT);
+        add_marks_to_digit(d, 4, TOP_OF_COLON | DOT_TOP_LEFT | DOT_TOP_RIGHT);
+        add_marks_to_digit(d, 5, DOT_TOP_LEFT | DOT_TOP_RIGHT | BOTTOM_LEFT | BOTTOM_RIGHT);
+
+        update_display(d);
+        break;
+    }
 
     case 0xFFFF:
     {
